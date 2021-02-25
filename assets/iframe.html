@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/combine/npm/@zendeskgarden/css-bedrock@7.0.21,npm/@zendeskgarden/css-utilities@4.3.0">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="glitzi-container">
+        <div buttons class="buttons-container">
+            <button create-issue-btn class="primary" disabled>Create Issue</button>
+            <button link-issue-btn class="primary" disabled>Link Issue</button>
+        </div>
+        <div class="issues-list-title">
+            Linked Gitlab Issues:
+        </div>
+        <div issues class="issue-container">
+            Loading...
+        </div>
+    </div>
+    <script src="https://static.zdassets.com/zendesk_app_framework_sdk/2.0/zaf_sdk.min.js"></script>
+    <script src="gitlab.js"></script>
+    <script src="glizi.js"></script>
+    <script>
+        function fetchIssues(container, ticketId) {
+            gitlab.request.issues(ticketId, (issues) => {
+                container.innerHTML = "";
+                if (issues && issues.length > 0) {
+                    for (var i = 0; i < issues.length; i++) {
+                        if (glizi.isMonitoredProject(issues[i]["project_id"])) {
+                            container.append(glizi.issueAsElement(issues[i], ticketId));
+                        }
+                    }
+                } else {
+                    container.innerHTML = "No linked issues.";
+                }
+            });
+        }
+
+        var client = ZAFClient.init();
+        client.invoke('resize', { width: '100%', height: '330px' });
+        glizi.init(client, () => {
+            var container = document.querySelector("[issues]");
+            client.get('ticket').then((data) => {
+                client.context().then((context) => {
+                    var ticketId = data['ticket'].id;
+                    var ticketDataParams = glizi.asTicketParams(data['ticket']);
+
+                    var createIssueButton = document.querySelector("[create-issue-btn]");
+                    createIssueButton.removeAttribute("disabled");
+                    createIssueButton.addEventListener("click", () => {
+                        client.invoke('instances.create', {
+                            location: 'modal',
+                            url: `assets/new-issue.html?${ticketDataParams}&parentId=${context.instanceGuid}`
+                        });
+                    });
+
+                    var linkIssueButton = document.querySelector("[link-issue-btn]");
+                    linkIssueButton.removeAttribute("disabled");
+                    linkIssueButton.addEventListener("click", () => {
+                        client.invoke('instances.create', {
+                            location: 'modal',
+                            url: `assets/link-issue.html?${ticketDataParams}&parentId=${context.instanceGuid}`
+                        });
+                    });
+                    client.on('refetch-links', (data) => {
+                        fetchIssues(container, ticketId);
+                    });
+                    fetchIssues(container, ticketId);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

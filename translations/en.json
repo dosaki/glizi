@@ -1,0 +1,20 @@
+{
+  "app": {
+    "name": "Glizi",
+    "short_description": "Gitlab Issues and Zendesk Integration",
+    "long_description": "Easily integrate Zendesk with your Gitlab instance in order to view and create issues",
+    "installation_instructions": "Install, configure your gitlab instance URL, input your automation user credentials.",
+    "parameters": {
+      "gitlabApiUrl": { "label": "Gitlab API URL", "helpText": "The URL to the gitlab API including the protocol. E.g.:'https://gitlab.your-company.com/api/v4/'" },
+      "gitlabToken": { "label": "Gitlab Token", "helpText": "The access token for the gitlab user you want to use as the integration. It must have read and write API access." },
+      "gitlabGroupId": { "label": "Gitlab Group ID", "helpText": "This should be the ID number of your gitlab group/organization." },
+      "gitlabTypeLabel": { "label": "Type Label", "helpText": "Start of the type label. Defaults to 'Type::'." },
+      "gitlabPriorityLabel": { "label": "Priority Label", "helpText": "Start of the priority label. Defaults to 'Priority::'." },
+      "gitlabExcludeTypeLabels": { "label": "Excluded Types", "helpText": "Type labels to exclude (ommiting the scope). E.g.: 'Vulnerability,Internal' rather than 'Type::Vulnerability,Type::Internal'." },
+      "gitlabExcludePriorityLabels": { "label": "Excluded Priorities", "helpText": "Priority labels to exclude (ommiting the scope). E.g.: 'Highest,Lowest' rather than 'Priority::Highest,Priority::Lowest'." },
+      "gitlabPriorityOrder": { "label": "Priority Options Order", "helpText": "Order of appearance for priority options in dropdowns. E.g.: 'Low,Normal,High'" },
+      "gitlabIncludeProjects": { "label": "Included Projects", "helpText": "Comma-separated list of project IDs to include. You can include a pretty name using a colon. E.g.: 19:My Pretty Project,80:Another Project" },
+      "gitlabExcludeProjects": { "label": "Excluded Projects", "helpText": "Comma-separated list of project IDs to exclude." }
+    }
+  }
+}

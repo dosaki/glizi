@@ -1,0 +1,80 @@
+{
+  "name": "Glizi",
+  "author": {
+    "name": "Panintelligence Development",
+    "email": "development@panintelligence.com",
+    "url": "https://panintelligence.com/"
+  },
+  "defaultLocale": "en",
+  "private": true,
+  "location": {
+    "support": {
+      "ticket_sidebar": "assets/iframe.html"
+    }
+  },
+  "version": "1.0",
+  "frameworkVersion": "2.0",
+  "parameters": [
+    {
+      "name": "gitlabApiUrl", 
+      "type": "text",
+      "required": true,
+      "secure": false,
+      "default": "https://your.gitlab.url/api/v4/"
+    },
+    {
+      "name": "gitlabToken",
+      "type": "text",
+      "required": true,
+      "secure": false
+    },
+    {
+      "name": "gitlabGroupId",
+      "type": "number",
+      "required": false,
+      "secure": false
+    },
+    {
+      "name": "gitlabTypeLabel",
+      "type": "text",
+      "required": false,
+      "secure": false
+    },
+    {
+      "name": "gitlabPriorityLabel",
+      "type": "text",
+      "required": false,
+      "secure": false
+    },
+    {
+      "name": "gitlabIncludeProjects",
+      "type": "number",
+      "required": false,
+      "secure": false
+    },
+    {
+      "name": "gitlabExcludeProjects",
+      "type": "number",
+      "required": false,
+      "secure": false
+    },
+    {
+      "name": "gitlabExcludeTypeLabels",
+      "type": "text",
+      "required": false,
+      "secure": false
+    },
+    {
+      "name": "gitlabExcludePriorityLabels",
+      "type": "text",
+      "required": false,
+      "secure": false
+    },
+    {
+      "name": "gitlabPriorityOrder",
+      "type": "text",
+      "required": false,
+      "secure": false
+    }
+  ]
+}

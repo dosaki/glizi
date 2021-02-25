@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/combine/npm/@zendeskgarden/css-bedrock@7.0.21,npm/@zendeskgarden/css-utilities@4.3.0">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="glitzi-container">
+        <div loading-splash class="splash">Loading...</div>
+        <div static-field class="hidden">
+            <div class="field-value">
+                <input search-field class="value" placeholder="Search for issues by text or their ID (e.g.: #123)"/><button search-btn class="primary">Search</button>
+            </div>
+        </div>
+        <div search-results class="issue-list">
+        </div>
+        <div issue-list static-field class="issue-list">
+        </div>
+    </div>
+    <div buttons class="buttons-container">
+        <button cancel-btn class="secondary">Cancel</button>
+        <button link-issues-btn class="primary" disabled>Link Issues</button>
+    </div>
+    <script src="https://static.zdassets.com/zendesk_app_framework_sdk/2.0/zaf_sdk.min.js"></script>
+    <script src="gitlab.js"></script>
+    <script src="glizi.js"></script>
+    <script>
+        var client = ZAFClient.init();
+        client.invoke('resize', { width: '600px', height: '700px' });
+        glizi.init(client, () => {
+            var staticFields = document.querySelectorAll("[static-field]");
+            var splash = document.querySelector("[loading-splash]");
+            var searchField = document.querySelector("[search-field]");
+            var searchResults = document.querySelector("[search-results]");
+            var params = glizi.convertParams();
+            var parentClient = client.instance(params.parentId);
+
+            for (var i = 0; i < staticFields.length; i++) {
+                staticFields[i].classList = [...staticFields[i].classList].filter((i) => i !== "hidden");
+            }
+            splash.className = `${splash.className} hidden`
+
+            var cancelBtn = document.querySelector("[cancel-btn]");
+            cancelBtn.addEventListener("click", () => {
+                client.invoke('destroy');
+            });
+
+            var searchBtn = document.querySelector("[search-btn]");
+            searchBtn.addEventListener("click", () => {
+                glizi.eventHandlers.search(searchField.value, searchResults);
+            });
+            searchField.addEventListener("keyup", (e) => {
+                if (e.key === 'Enter' || e.keyCode === 13) {
+                    glizi.eventHandlers.search(searchField.value, searchResults);
+                }
+            });
+
+            var linkBtn = document.querySelector("[link-issues-btn]");
+            linkBtn.removeAttribute("disabled");
+            linkBtn.addEventListener("click", () => {
+                var elements = [...document.querySelectorAll("[search-result]:checked")];
+                var issues = elements.map(el => el.parentElement.querySelector("a").innerText);
+                glizi.linkIssues(params.id, issues, () => {
+                    parentClient.trigger('refetch-links');
+                    client.invoke('destroy');
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

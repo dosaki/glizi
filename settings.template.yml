@@ -1,0 +1,11 @@
+# Copy this file as settings.yml
+gitlabApiUrl: "https://gitlab.panintelligence.cloud/api/v4/"
+gitlabToken: "token-here" # Replace this!
+gitlabGroupId: 2
+gitlabIncludeProjects: "90:Configuration Tool,55:Deployment,26:Pirana,19:Scheduler,16:Excel Reader,15:Renderer,2:Dashboard"
+gitlabExcludeProjects: ""
+gitlabTypeLabel: "Type::"
+#gitlabExcludeTypeLabels: "Bug,Vulnerability"
+gitlabPriorityLabel: "Priority::"
+#gitlabExcludePriorityLabels: "Highest,Lowest"
+#gitlabPriorityOrder: "Low,Normal,High"

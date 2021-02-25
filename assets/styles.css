@@ -1,0 +1,140 @@
+.glitzi-container {
+    padding:8px;
+}
+
+.buttons-container {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 8px;
+}
+
+button {
+    background: transparent;
+    padding: 5px;
+    border:1px solid;
+    margin-left: 5px;
+    margin-right: 5px;
+    border-radius: 4px;
+}
+
+button.primary {
+    color: darkorange;
+    border-color:darkorange;
+}
+
+button.primary:hover {
+    background: darkorange;
+    color: white;
+    border-color:darkorange;
+}
+
+button.secondary {
+    color: #444;
+    border-color:#444;
+}
+
+button.secondary:hover {
+    background: #444;
+    color: white;
+    border-color:#444;
+}
+
+button[disabled] {
+    color: darkgray;
+    border-color:darkgray;
+}
+button[disabled]:hover {
+    background: transparent;
+    color: darkgray;
+    border-color:darkgray;
+}
+
+.buttons-container button {
+    flex-grow: 1;
+}
+
+.buttons-container button:first-child {
+    margin-left: 0;
+}
+
+.buttons-container button:last-child {
+    margin-right: 0;
+}
+
+.issues-list-title {
+    border-bottom: 1px solid #747d83;
+}
+
+.issue {
+    border-bottom: 1px solid #C2C8CC;
+    margin-top: 8px;
+}
+
+.field-value {
+    padding:10px;
+    display: flex;
+}
+
+.field-value.small {
+    padding:2px 0;
+    display: flex;
+}
+
+.field {
+    display: inline-block;
+    margin-right: 5px;
+    font-weight: bold;
+    width: 75px;
+}
+
+.value,
+.value-sm {
+    padding: 4px;
+    border-radius: 4px;
+    outline: none;
+    background: transparent;
+    border-color: darkgray;
+}
+
+.value {
+    flex-grow: 1;
+}
+.value-sm{
+    width: 60px;
+}
+
+.hidden {
+    display: none;
+}
+
+input.result[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.zendesk-link {
+    background: #17494D;
+    color: #fff;
+    font-weight: bold;
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 6px;
+    text-decoration: none;
+    border: 1px solid #17494D;
+}
+.zendesk-link:hover {
+    background: #fff;
+    color: #17494D;
+}
+
+.issue-header > * {
+    display: inline-block;
+}
+
+.unlink-link {
+    font-size: 80%;
+    margin-left: 12px;
+}
+
+.field-value.small > .value {
+    padding: 0
+}
