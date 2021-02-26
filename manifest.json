@@ -48,13 +48,13 @@
     },
     {
       "name": "gitlabIncludeProjects",
-      "type": "number",
+      "type": "text",
       "required": false,
       "secure": false
     },
     {
       "name": "gitlabExcludeProjects",
-      "type": "number",
+      "type": "text",
       "required": false,
       "secure": false
     },

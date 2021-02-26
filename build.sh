@@ -10,6 +10,7 @@ CURRENT_DIR="$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
 
 cd $CURRENT_DIR
 
+rm -rf ./dist
 rm -rf ./build
 mkdir ./build
 cp -r ./assets ./build

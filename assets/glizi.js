@@ -45,16 +45,16 @@ glizi.init = function (client, callback) {
                     .filter(label => label.startsWith(gitlab.priorityLabel))
                     .map(prop => prop.replace(gitlab.priorityLabel, ""))
                     .filter(label => !gitlab.excludePriorityLabels.includes(label))
-                    .sort((a,b) => {
+                    .sort((a, b) => {
                         let aPos = gitlab.priorityOrder.indexOf(a);
                         aPos = aPos === -1 ? Number.POSITIVE_INFINITY : aPos;
                         let bPos = gitlab.priorityOrder.indexOf(b);
                         bPos = bPos === -1 ? Number.POSITIVE_INFINITY : bPos;
-                        if ( aPos < bPos ){
-                          return -1;
+                        if (aPos < bPos) {
+                            return -1;
                         }
-                        if ( aPos > bPos ){
-                          return 1;
+                        if (aPos > bPos) {
+                            return 1;
                         }
                         return 0;
                     });
@@ -140,20 +140,55 @@ glizi.newInputValueElement = function (field, value, extraClasses) {
     return div;
 }
 
-glizi.newValueElement = function (field, value, extraClasses) {
+glizi.toggleCollapsibleValueElement = function (valueElem, shortValueElem) {
+    if (valueElem.className.includes("hidden")) {
+        valueElem.className = valueElem.className.replace("hidden", "");
+        shortValueElem.innerHTML = " ";
+    } else {
+        valueElem.className = valueElem.className + "hidden";
+        shortValueElem.innerHTML = "View";
+    }
+}
+
+glizi.newValueElement = function (field, value, extraClasses, collapsable) {
     var div = document.createElement('div');
     var additionalClasses = extraClasses || [];
     div.className = ["field-value", ...additionalClasses].join(" ");
+    if (collapsable) {
+        div.setAttribute("collapsed", "true");
+    }
 
     var fieldElem = document.createElement('span');
     fieldElem.className = "field";
     fieldElem.innerHTML = field;
 
+
     var valueElem = document.createElement('span');
-    valueElem.className = "value";
+    valueElem.className = collapsable ? "value hidden" : "value";
     valueElem.innerHTML = value;
+    if (collapsable) {
+        valueElem.setAttribute("uncollapsed-value", "");
+    }
+
+    if (collapsable) {
+        var shortValueElem = document.createElement('button');
+        shortValueElem.className = "primary value";
+        shortValueElem.innerHTML = "View";
+        shortValueElem.setAttribute("collapsed-value", "");
+        shortValueElem.addEventListener("click", () => {
+            glizi.toggleCollapsibleValueElement(valueElem, shortValueElem);
+        });
+        fieldElem.addEventListener("click", () => {
+            glizi.toggleCollapsibleValueElement(valueElem, shortValueElem);
+        });
+    }
+
 
     div.append(fieldElem);
+
+    if (collapsable) {
+        div.append(shortValueElem);
+    }
     div.append(valueElem);
 
     return div;
@@ -171,7 +206,7 @@ glizi.issueHeader = function (issue, zendeskId) {
     var div = document.createElement('div');
     div.className = "issue-header";
     div.append(glizi.link(glizi.issueCode(issue), issue["web_url"]));
-    if(zendeskId){
+    if (zendeskId) {
         var unlinkButton = glizi.link("unlink", "javascript:void(0)", "unlink-link");
         unlinkButton.addEventListener("click", () => {
             glizi.unlinkIssues(zendeskId, glizi.issueCode(issue));
@@ -185,7 +220,7 @@ glizi.issueCode = function (issue) {
     return `${gitlab.monitoredProjects[String(issue["project_id"])]["_prettyName"]}#${issue.iid}`
 }
 
-glizi.labelsAsProperties = function(labels) {
+glizi.labelsAsProperties = function (labels) {
     var properties = {
         "Type": "Not set",
         "Priority": "Not Set",
@@ -196,19 +231,19 @@ glizi.labelsAsProperties = function(labels) {
     labels.forEach((label) => {
         var key = label;
         var value = true;
-        if(label.includes("::")){
+        if (label.includes("::")) {
             var key = label.split("::")[0];
             var value = label.split("::")[1];
-        } else if(label.includes(":")){
+        } else if (label.includes(":")) {
             var key = label.split(":")[0];
             var value = label.split(":")[1];
         }
-        if(key === "Zendesk"){
+        if (key === "Zendesk") {
             key = "Linked"
             value = `<a class="zendesk-link" target="_blank" href="https://panintelligencesupport.zendesk.com/agent/tickets/${value}">#${value}</a>`
         }
-        if(Object.keys(properties).includes(key)){
-            if(Array.isArray(properties[key])){
+        if (Object.keys(properties).includes(key)) {
+            if (Array.isArray(properties[key])) {
                 properties[key].push(value);
             } else {
                 properties[key] = value;
@@ -225,6 +260,8 @@ glizi.issueAsElement = function (issue, zendeskId) {
     div.setAttribute("issue_code", glizi.issueCode(issue));
     div.append(glizi.issueHeader(issue, zendeskId));
     div.append(glizi.newValueElement("Title:", issue.title, ["small"]));
+    div.append(glizi.newValueElement("Description:", issue.description.replace(/\n/g, "<br/>"), ["small"], true));
+    div.append(glizi.newValueElement("Assignees:", issue.assignees.map(a => `<div class='assignee'>${a.name}</div>`).join(''), ["small"]));
     div.append(glizi.newValueElement("Sprint:", `${issue.milestone.title} (${issue.milestone.id})`, ["small"]));
     Object.keys(issueProperties).forEach((prop) => {
         var value = Array.isArray(issueProperties[prop]) ? issueProperties[prop].join(" ") : issueProperties[prop];
@@ -273,24 +310,45 @@ glizi.prepareForSending = function (params) {
     return issue;
 }
 
+glizi.makeZendeskMarkdownLink = function (zendeskId) {
+    return `[Zendesk:${zendeskId}](${window.location.ancestorOrigins[0]}/agent/tickets/${zendeskId})`;
+}
+
 glizi.linkIssues = function (zendeskId, issueCodes, callback) {
     issueCodes.forEach((issueCode) => {
         var issue = glizi.issueSearchCache[issueCode];
-        gitlab.request.issues.edit(issue.iid, issue.project_id, {
+        var dataToChange = {
             "add_labels": `Zendesk:${zendeskId}`
-        }, callback);
+        };
+        if (issue.description.includes("\n\n----\n\nLinked Zendesk tickets:")) {
+            dataToChange.description = issue.description
+                .replace(
+                    /\n\n----\n\nLinked Zendesk tickets:/,
+                    `\n\n----\n\nLinked Zendesk tickets:\n* ${glizi.makeZendeskMarkdownLink(zendeskId)}`
+                );
+        } else {
+            dataToChange.description = `${issue.description}\n\n----\n\nLinked Zendesk tickets:\n* ${glizi.makeZendeskMarkdownLink(zendeskId)}`;
+        }
+        gitlab.request.issues.edit(issue.iid, issue.project_id, dataToChange, (data) => {
+            glizi.issueSearchCache[issueCode] = data;
+            callback(data);
+        });
     });
 }
 
 glizi.unlinkIssues = function (zendeskId, issueCode) {
     var projectIssuePair = glizi.splitProjectIssuePair(issueCode);
-    gitlab.request.issues.searchByID(projectIssuePair.projectId, projectIssuePair.id, (issues) =>{
+    gitlab.request.issues.searchByID(projectIssuePair.projectId, projectIssuePair.id, (issues) => {
         var issue = issues[0];
-        if(issue){
-            gitlab.request.issues.edit(issue.iid, issue.project_id, {
+        if (issue) {
+            var dataToChange = {
                 "remove_labels": `Zendesk:${zendeskId}`
+            };
+            dataToChange.description = issue.description.replace(`\n* ${glizi.makeZendeskMarkdownLink(zendeskId)}`,"");
+            gitlab.request.issues.edit(issue.iid, issue.project_id, dataToChange, (data) => {
+                glizi.issueSearchCache[issueCode] = data;
+                document.querySelector(`[issue_code="${issueCode}"]`).remove();
             });
-            document.querySelector(`[issue_code="${issueCode}"]`).remove();
         } else {
             console.error(`No issue found in gitlab for ${issueCode}.`)
         }
@@ -301,7 +359,7 @@ glizi.newIssue = function (issueDetails, callback) {
     gitlab.request.issues.new(issueDetails.projectId, {
         "title": issueDetails.title,
         "milestone_id": issueDetails.milestoneId || 0,
-        "description": issueDetails.description,
+        "description": issueDetails.description + `\n\n----\n\nLinked Zendesk tickets:\n* ${glizi.makeZendeskMarkdownLink(issueDetails.zendeskId)}`,
         "add_labels": `Priority::${issueDetails.priority},Type::${issueDetails.type},Zendesk:${issueDetails.zendeskId}`
     }, callback);
 }
@@ -327,7 +385,7 @@ glizi.splitProjectIssuePair = function (searchText) {
     };
 }
 
-glizi.displayIssues = function(element, issues) {
+glizi.displayIssues = function (element, issues) {
     element.innerHTML = "";
     issues.forEach((issue) => {
         if (glizi.isMonitoredProject(issue["project_id"])) {
@@ -343,7 +401,7 @@ glizi.eventHandlers.search = function (searchText, element) {
     element.innerHTML = "Searching..."
     if (glizi.isSearchingByID(searchText)) {
         var projectIssuePair = glizi.splitProjectIssuePair(searchText);
-        gitlab.request.issues.searchByID(projectIssuePair.projectId, projectIssuePair.id, (issues) =>{
+        gitlab.request.issues.searchByID(projectIssuePair.projectId, projectIssuePair.id, (issues) => {
             glizi.displayIssues(element, issues);
         });
     } else {

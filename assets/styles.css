@@ -120,6 +120,7 @@ input.result[type="checkbox"] {
     border-radius: 6px;
     text-decoration: none;
     border: 1px solid #17494D;
+    margin: 1px;
 }
 .zendesk-link:hover {
     background: #fff;
@@ -137,4 +138,16 @@ input.result[type="checkbox"] {
 
 .field-value.small > .value {
     padding: 0
+}
+
+.assignee {
+    background: #8d135b;
+    color: #fff;
+    font-weight: bold;
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 6px;
+    text-decoration: none;
+    border: 1px solid #8d135b;
+    margin: 1px;
 }
