@@ -2,3 +2,5 @@ settings.yml
 .zat
 tmp
 dist
+build
+node_modules

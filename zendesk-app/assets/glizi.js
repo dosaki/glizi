@@ -1,3 +1,5 @@
+var gitlab = require('./gitlab');
+
 var glizi = {};
 glizi.modules = null;
 glizi.issueTypes = null;
@@ -77,7 +79,7 @@ glizi.asTicketParams = function (ticket) {
 
 glizi.convertParams = function () {
     var paramsObj = {};
-    var params = decodeURI(window.location.search)
+    var params = decodeURIComponent(window.location.search)
         .replace('?', '')
         .split('&');
     for (var i = 0; i < params.length; i++) {
@@ -89,7 +91,7 @@ glizi.convertParams = function () {
 }
 
 glizi.jsonToParams = function (json) {
-    return Object.keys(json).map(key => `${key}=${encodeURI(json[key])}`).join("&");
+    return Object.keys(json).map(key => `${key}=${encodeURIComponent(json[key])}`).join("&");
 }
 
 glizi.isMonitoredProject = function (projectId) {

@@ -1,6 +1,6 @@
-# App name
+# Glizi
 
-[brief description of the app]
+A Zendesk App to integrate your Zendesk Servicedesk with Gitlab Issues.
 
 ### The following information is displayed:
 

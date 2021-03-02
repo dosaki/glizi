@@ -22,8 +22,10 @@
         </div>
     </div>
     <script src="https://static.zdassets.com/zendesk_app_framework_sdk/2.0/zaf_sdk.min.js"></script>
-    <script src="gitlab.js"></script>
+    <!-- <script src="gitlab.js"></script> -->
     <script src="glizi.js"></script>
+    <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
+
     <script>
         function fetchIssues(container, ticketId) {
             gitlab.request.issues(ticketId, (issues) => {
@@ -39,9 +41,23 @@
                 }
             });
         }
-
+        var createIssueClient = null;
         var client = ZAFClient.init();
         client.invoke('resize', { width: '100%', height: '330px' });
+
+        client.on('get-comment', (number) => {
+            client.get('ticket')
+                .then((result) => {
+                    var comment = number < 0 ? result.ticket.comments[result.ticket.comments.length + number] : result.ticket.comments[number];
+                    var plainTextComment = new TurndownService().turndown(comment.value)
+                    createIssueClient.trigger('got-comment', plainTextComment);
+                })
+                .catch((e) => {
+                    console.error("Failed to get the comments", e);
+                    createIssueClient.trigger('got-comment', "ERROR GETTING COMMENTS!");
+                });
+        });
+
         glizi.init(client, () => {
             var container = document.querySelector("[issues]");
             client.get('ticket').then((data) => {
@@ -55,6 +71,8 @@
                         client.invoke('instances.create', {
                             location: 'modal',
                             url: `assets/new-issue.html?${ticketDataParams}&parentId=${context.instanceGuid}`
+                        }).then((context) => {
+                            createIssueClient = client.instance(context['instances.create'][0].instanceGuid);
                         });
                     });
 

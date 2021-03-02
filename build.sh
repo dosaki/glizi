@@ -13,9 +13,9 @@ cd $CURRENT_DIR
 rm -rf ./dist
 rm -rf ./build
 mkdir ./build
-cp -r ./assets ./build
-cp -r ./translations ./build
-cp -r ./manifest.json ./build
+cp -r ./zendesk-app/assets ./build
+cp -r ./zendesk-app/translations ./build
+cp -r ./zendesk-app/manifest.json ./build
 cp -r ./README.md ./build
 
 cd ./build

@@ -11,42 +11,34 @@
 <body>
     <div class="glitzi-container">
         <div loading-splash class="splash">Loading...</div>
-        <div dynamic-fields></div>
-        <div static-field class="field-value hidden">
-            <div class="field">Description</div>
-            <div class="value">
-                <textarea style="width:100%;height:200px;" glizi-value="description">
-**GIVEN:**
-
-**WHEN:**
-
-**THEN:**
-</textarea>
+        <div static-field class="hidden">
+            <div class="field-value">
+                <input search-field class="value" placeholder="Search for issues by text or their ID (e.g.: #123)"/><button search-btn class="primary">Search</button>
             </div>
+        </div>
+        <div search-results class="issue-list">
+        </div>
+        <div issue-list static-field class="issue-list">
         </div>
     </div>
     <div buttons class="buttons-container">
         <button cancel-btn class="secondary">Cancel</button>
-        <button issue-create-btn class="primary" disabled>Create</button>
+        <button link-issues-btn class="primary" disabled>Link Issues</button>
     </div>
     <script src="https://static.zdassets.com/zendesk_app_framework_sdk/2.0/zaf_sdk.min.js"></script>
-    <script src="gitlab.js"></script>
+    <!-- <script src="gitlab.js"></script> -->
     <script src="glizi.js"></script>
     <script>
         var client = ZAFClient.init();
         client.invoke('resize', { width: '600px', height: '700px' });
         glizi.init(client, () => {
-            var container = document.querySelector("[dynamic-fields]");
-            var splash = document.querySelector("[loading-splash]");
             var staticFields = document.querySelectorAll("[static-field]");
+            var splash = document.querySelector("[loading-splash]");
+            var searchField = document.querySelector("[search-field]");
+            var searchResults = document.querySelector("[search-results]");
             var params = glizi.convertParams();
             var parentClient = client.instance(params.parentId);
 
-            container.append(glizi.newDropdownValueElement("Project", glizi.modules));
-            container.append(glizi.newDropdownValueElement("Type", glizi.issueTypes));
-            container.append(glizi.newDropdownValueElement("Priority", glizi.issuePriorities));
-            container.append(glizi.newDropdownValueElement("Sprint", glizi.sprints));
-            container.append(glizi.newInputValueElement("Title", params.subject));
             for (var i = 0; i < staticFields.length; i++) {
                 staticFields[i].classList = [...staticFields[i].classList].filter((i) => i !== "hidden");
             }
@@ -57,10 +49,22 @@
                 client.invoke('destroy');
             });
 
-            var createBtn = document.querySelector("[issue-create-btn]");
-            createBtn.removeAttribute("disabled");
-            createBtn.addEventListener("click", () => {
-                glizi.newIssue(glizi.prepareForSending(params), () => {
+            var searchBtn = document.querySelector("[search-btn]");
+            searchBtn.addEventListener("click", () => {
+                glizi.eventHandlers.search(searchField.value, searchResults);
+            });
+            searchField.addEventListener("keyup", (e) => {
+                if (e.key === 'Enter' || e.keyCode === 13) {
+                    glizi.eventHandlers.search(searchField.value, searchResults);
+                }
+            });
+
+            var linkBtn = document.querySelector("[link-issues-btn]");
+            linkBtn.removeAttribute("disabled");
+            linkBtn.addEventListener("click", () => {
+                var elements = [...document.querySelectorAll("[search-result]:checked")];
+                var issues = elements.map(el => el.parentElement.querySelector("a").innerText);
+                glizi.linkIssues(params.id, issues, () => {
                     parentClient.trigger('refetch-links');
                     client.invoke('destroy');
                 });
