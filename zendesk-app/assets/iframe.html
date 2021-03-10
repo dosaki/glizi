@@ -22,9 +22,7 @@
         </div>
     </div>
     <script src="https://static.zdassets.com/zendesk_app_framework_sdk/2.0/zaf_sdk.min.js"></script>
-    <!-- <script src="gitlab.js"></script> -->
-    <script src="glizi.js"></script>
-    <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
+    <script src="main.js"></script>
 
     <script>
         function fetchIssues(container, ticketId) {
@@ -49,7 +47,7 @@
             client.get('ticket')
                 .then((result) => {
                     var comment = number < 0 ? result.ticket.comments[result.ticket.comments.length + number] : result.ticket.comments[number];
-                    var plainTextComment = new TurndownService().turndown(comment.value)
+                    var plainTextComment = textFormatter.htmlToMd(comment.value)
                     createIssueClient.trigger('got-comment', plainTextComment);
                 })
                 .catch((e) => {
@@ -58,37 +56,35 @@
                 });
         });
 
-        glizi.init(client, () => {
+        glizi.init(client, (context) => {
             var container = document.querySelector("[issues]");
             client.get('ticket').then((data) => {
-                client.context().then((context) => {
-                    var ticketId = data['ticket'].id;
-                    var ticketDataParams = glizi.asTicketParams(data['ticket']);
+                var ticketId = data['ticket'].id;
+                var ticketDataParams = glizi.asTicketParams(data['ticket']);
 
-                    var createIssueButton = document.querySelector("[create-issue-btn]");
-                    createIssueButton.removeAttribute("disabled");
-                    createIssueButton.addEventListener("click", () => {
-                        client.invoke('instances.create', {
-                            location: 'modal',
-                            url: `assets/new-issue.html?${ticketDataParams}&parentId=${context.instanceGuid}`
-                        }).then((context) => {
-                            createIssueClient = client.instance(context['instances.create'][0].instanceGuid);
-                        });
+                var createIssueButton = document.querySelector("[create-issue-btn]");
+                createIssueButton.removeAttribute("disabled");
+                createIssueButton.addEventListener("click", () => {
+                    client.invoke('instances.create', {
+                        location: 'modal',
+                        url: `assets/new-issue.html?${ticketDataParams}&parentId=${context.instanceGuid}`
+                    }).then((context) => {
+                        createIssueClient = client.instance(context['instances.create'][0].instanceGuid);
                     });
+                });
 
-                    var linkIssueButton = document.querySelector("[link-issue-btn]");
-                    linkIssueButton.removeAttribute("disabled");
-                    linkIssueButton.addEventListener("click", () => {
-                        client.invoke('instances.create', {
-                            location: 'modal',
-                            url: `assets/link-issue.html?${ticketDataParams}&parentId=${context.instanceGuid}`
-                        });
+                var linkIssueButton = document.querySelector("[link-issue-btn]");
+                linkIssueButton.removeAttribute("disabled");
+                linkIssueButton.addEventListener("click", () => {
+                    client.invoke('instances.create', {
+                        location: 'modal',
+                        url: `assets/link-issue.html?${ticketDataParams}&parentId=${context.instanceGuid}`
                     });
-                    client.on('refetch-links', (data) => {
-                        fetchIssues(container, ticketId);
-                    });
+                });
+                client.on('refetch-links', (data) => {
                     fetchIssues(container, ticketId);
                 });
+                fetchIssues(container, ticketId);
             });
         });
     </script>

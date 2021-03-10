@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/combine/npm/@zendeskgarden/css-bedrock@7.0.21,npm/@zendeskgarden/css-utilities@4.3.0">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="glitzi-container">
+        <div loading-splash class="splash">Loading...</div>
+        <div dynamic-fields></div>
+    </div>
+    <div buttons class="buttons-container">
+        <button cancel-btn class="secondary">Cancel</button>
+        <button issue-save-btn class="primary" disabled>Save</button>
+    </div>
+    <script src="https://static.zdassets.com/zendesk_app_framework_sdk/2.0/zaf_sdk.min.js"></script>
+    <script src="main.js"></script>
+    <script>
+        var client = ZAFClient.init();
+        client.invoke('resize', { width: '600px', height: '700px' });
+        client.on('got-comment', (comment) => {
+            document.querySelector('[glizi-value="description"]').innerHTML = comment;
+        });
+        glizi.init(client, () => {
+            var container = document.querySelector("[dynamic-fields]");
+            var splash = document.querySelector("[loading-splash]");
+            var staticFields = document.querySelectorAll("[static-field]");
+            var params = glizi.convertParams();
+            var parentClient = client.instance(params.parentId);
+            
+            client.on('got-issue-info', (issue) => {
+                container.append(glizi.editableField("Title", issue.title));
+                container.append(glizi.editableDropdownField("Project", glizi.modules));
+                container.append(glizi.editableDropdownField("Type", glizi.issueTypes));
+                container.append(glizi.editableDropdownField("Priority", glizi.issuePriorities));
+                container.append(glizi.editableDropdownField("Sprint", glizi.sprints));
+                for (var i = 0; i < staticFields.length; i++) {
+                    staticFields[i].classList = [...staticFields[i].classList].filter((i) => i !== "hidden");
+                }
+                splash.className = `${splash.className} hidden`
+            });
+
+            var cancelBtn = document.querySelector("[cancel-btn]");
+            cancelBtn.addEventListener("click", () => {
+                client.invoke('destroy');
+            });
+
+            var saveBtn = document.querySelector("[issue-save-btn]");
+            saveBtn.removeAttribute("disabled");
+            saveBtn.addEventListener("click", () => {
+                // glizi.newIssue(glizi.prepareForSending(params), () => {
+                    parentClient.trigger('refetch-links');
+                    client.invoke('destroy');
+                // });
+            });
+        });
+    </script>
+</body>
+
+</html>

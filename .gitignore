@@ -4,3 +4,6 @@ tmp
 dist
 build
 node_modules
+main.js
+main.js.map
+.cache

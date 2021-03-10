@@ -9,5 +9,5 @@ done
 CURRENT_DIR="$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
 
 cd zendesk-app/
-parcel watch ./assets/glizi.js &
+./node_modules/parcel/bin/cli.js watch ./assets/js/glizi.js --out-file main.js --out-dir ./assets/ &
 zat server

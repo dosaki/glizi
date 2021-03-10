@@ -1,6 +1,7 @@
-var gitlab = require('./gitlab');
+const gitlab = require('./gitlab');
+const textFormatter = require('./text-formatter');
 
-var glizi = {};
+const glizi = {};
 glizi.modules = null;
 glizi.issueTypes = null;
 glizi.sprints = [];
@@ -25,45 +26,49 @@ glizi.filterProjects = function (rawProjects, included, excluded) {
 
 
 glizi.init = function (client, callback) {
+    glizi.client = client;
     client.metadata().then(function (metadata) {
-        gitlab.apiUrl = metadata.settings.gitlabApiUrl;
-        gitlab.token = metadata.settings.gitlabToken;
-        gitlab.groupId = metadata.settings.gitlabGroupId || null;
-        gitlab.typeLabel = metadata.settings.gitlabTypeLabel || "Type::";
-        gitlab.priorityLabel = metadata.settings.gitlabPriorityLabel || "Priority::";
-        gitlab.excludeTypeLabels = metadata.settings.gitlabExcludeTypeLabels ? metadata.settings.gitlabExcludeTypeLabels.split(",") : [];
-        gitlab.excludePriorityLabels = metadata.settings.gitlabExcludePriorityLabels ? metadata.settings.gitlabExcludePriorityLabels.split(",") : [];
-        gitlab.priorityOrder = metadata.settings.gitlabPriorityOrder ? metadata.settings.gitlabPriorityOrder.split(",") : [];
-        gitlab.request.projects(function (rawProjects) {
-            gitlab.monitoredProjects = glizi.filterProjects(rawProjects, metadata.settings.gitlabIncludeProjects, metadata.settings.gitlabExcludeProjects);
-            glizi.modules = Object.values(gitlab.monitoredProjects).map(proj => proj._prettyName);
-            gitlab.request.labels(function (data) {
-                gitlab.labels = data.map(label => label.name);
-                glizi.issueTypes = gitlab.labels
-                    .filter(label => label.startsWith(gitlab.typeLabel))
-                    .map(prop => prop.replace(gitlab.typeLabel, ""))
-                    .filter(label => !gitlab.excludeTypeLabels.includes(label));
-                glizi.issuePriorities = gitlab.labels
-                    .filter(label => label.startsWith(gitlab.priorityLabel))
-                    .map(prop => prop.replace(gitlab.priorityLabel, ""))
-                    .filter(label => !gitlab.excludePriorityLabels.includes(label))
-                    .sort((a, b) => {
-                        let aPos = gitlab.priorityOrder.indexOf(a);
-                        aPos = aPos === -1 ? Number.POSITIVE_INFINITY : aPos;
-                        let bPos = gitlab.priorityOrder.indexOf(b);
-                        bPos = bPos === -1 ? Number.POSITIVE_INFINITY : bPos;
-                        if (aPos < bPos) {
-                            return -1;
-                        }
-                        if (aPos > bPos) {
-                            return 1;
-                        }
-                        return 0;
+        client.context().then((context) => {
+            glizi.client._context = context;
+            gitlab.apiUrl = metadata.settings.gitlabApiUrl;
+            gitlab.token = metadata.settings.gitlabToken;
+            gitlab.groupId = metadata.settings.gitlabGroupId || null;
+            gitlab.typeLabel = metadata.settings.gitlabTypeLabel || "Type::";
+            gitlab.priorityLabel = metadata.settings.gitlabPriorityLabel || "Priority::";
+            gitlab.excludeTypeLabels = metadata.settings.gitlabExcludeTypeLabels ? metadata.settings.gitlabExcludeTypeLabels.split(",") : [];
+            gitlab.excludePriorityLabels = metadata.settings.gitlabExcludePriorityLabels ? metadata.settings.gitlabExcludePriorityLabels.split(",") : [];
+            gitlab.priorityOrder = metadata.settings.gitlabPriorityOrder ? metadata.settings.gitlabPriorityOrder.split(",") : [];
+            gitlab.request.projects(function (rawProjects) {
+                gitlab.monitoredProjects = glizi.filterProjects(rawProjects, metadata.settings.gitlabIncludeProjects, metadata.settings.gitlabExcludeProjects);
+                glizi.modules = Object.values(gitlab.monitoredProjects).map(proj => proj._prettyName);
+                gitlab.request.labels(function (data) {
+                    gitlab.labels = data.map(label => label.name);
+                    glizi.issueTypes = gitlab.labels
+                        .filter(label => label.startsWith(gitlab.typeLabel))
+                        .map(prop => prop.replace(gitlab.typeLabel, ""))
+                        .filter(label => !gitlab.excludeTypeLabels.includes(label));
+                    glizi.issuePriorities = gitlab.labels
+                        .filter(label => label.startsWith(gitlab.priorityLabel))
+                        .map(prop => prop.replace(gitlab.priorityLabel, ""))
+                        .filter(label => !gitlab.excludePriorityLabels.includes(label))
+                        .sort((a, b) => {
+                            let aPos = gitlab.priorityOrder.indexOf(a);
+                            aPos = aPos === -1 ? Number.POSITIVE_INFINITY : aPos;
+                            let bPos = gitlab.priorityOrder.indexOf(b);
+                            bPos = bPos === -1 ? Number.POSITIVE_INFINITY : bPos;
+                            if (aPos < bPos) {
+                                return -1;
+                            }
+                            if (aPos > bPos) {
+                                return 1;
+                            }
+                            return 0;
+                        });
+                    gitlab.request.milestones(function (data) {
+                        gitlab.milestones = data;
+                        glizi.sprints = ["", ...data.map(milestone => `${milestone.title} (${milestone.id})`)];
+                        callback(context, metadata);
                     });
-                gitlab.request.milestones(function (data) {
-                    gitlab.milestones = data;
-                    glizi.sprints = ["", ...data.map(milestone => `${milestone.title} (${milestone.id})`)];
-                    callback();
                 });
             });
         });
@@ -142,6 +147,47 @@ glizi.newInputValueElement = function (field, value, extraClasses) {
     return div;
 }
 
+glizi.editableField = function(field, value, extraClasses) {
+    var div = document.createElement('div');
+    var additionalClasses = extraClasses || [];
+    div.className = ["field-value", ...additionalClasses].join(" ");
+
+    var valueElem = document.createElement('input');
+    valueElem.className = "value";
+    valueElem.setAttribute("glizi-value", field.toLowerCase());
+    valueElem.setAttribute("placeholder", field);
+    valueElem.value = value;
+    
+    div.append(valueElem);
+
+    return div;
+}
+
+glizi.editableDropdownField = function(field, values, extraClasses, chosenValue) {
+    var div = document.createElement('div');
+    var additionalClasses = extraClasses || [];
+    div.className = ["field-value", ...additionalClasses].join(" ");
+
+    var valueElem = document.createElement('select');
+    valueElem.className = "value";
+    valueElem.setAttribute("glizi-value", field.toLowerCase());
+    
+    var optionElem = document.createElement('option');
+    optionElem.innerHTML = values[i];
+    valueElem.append(`${field}...`);
+
+    for (var i = 0; i < values.length; i++) {
+        var optionElem = document.createElement('option');
+        optionElem.innerHTML = values[i];
+        valueElem.append(optionElem);
+    }
+    valueElem.value = chosenValue;
+
+    div.append(valueElem);
+
+    return div;
+}
+
 glizi.toggleCollapsibleValueElement = function (valueElem, shortValueElem) {
     if (valueElem.className.includes("hidden")) {
         valueElem.className = valueElem.className.replace("hidden", "");
@@ -150,6 +196,17 @@ glizi.toggleCollapsibleValueElement = function (valueElem, shortValueElem) {
         valueElem.className = valueElem.className + "hidden";
         shortValueElem.innerHTML = "View";
     }
+}
+
+glizi.newButton = function(text, classNames, fn) {
+    var btn = document.createElement('button');
+    btn.className = classNames;
+    btn.innerHTML = text;
+    btn.setAttribute("collapsed-value", "");
+    btn.addEventListener("click", (e) => {
+        fn(e, btn);
+    });
+    return btn;
 }
 
 glizi.newValueElement = function (field, value, extraClasses, collapsable) {
@@ -173,18 +230,13 @@ glizi.newValueElement = function (field, value, extraClasses, collapsable) {
     }
 
     if (collapsable) {
-        var shortValueElem = document.createElement('button');
-        shortValueElem.className = "primary value";
-        shortValueElem.innerHTML = "View";
-        shortValueElem.setAttribute("collapsed-value", "");
-        shortValueElem.addEventListener("click", () => {
-            glizi.toggleCollapsibleValueElement(valueElem, shortValueElem);
+        var shortValueElem = glizi.newButton("View", "primary value", (e, elem) => {
+            glizi.toggleCollapsibleValueElement(valueElem, elem);
         });
         fieldElem.addEventListener("click", () => {
             glizi.toggleCollapsibleValueElement(valueElem, shortValueElem);
         });
     }
-
 
     div.append(fieldElem);
 
@@ -208,6 +260,7 @@ glizi.issueHeader = function (issue, zendeskId) {
     var div = document.createElement('div');
     div.className = "issue-header";
     div.append(glizi.link(glizi.issueCode(issue), issue["web_url"]));
+    
     if (zendeskId) {
         var unlinkButton = glizi.link("unlink", "javascript:void(0)", "unlink-link");
         unlinkButton.addEventListener("click", () => {
@@ -215,6 +268,20 @@ glizi.issueHeader = function (issue, zendeskId) {
         });
         div.append(unlinkButton);
     }
+    var spacer = document.createElement("div");
+    spacer.className = "flex-spacer";
+    div.append(spacer);
+    var editButton = glizi.newButton("✐", "primary", () => {
+        client.invoke('instances.create', {
+            location: 'modal',
+            url: `assets/issue-details.html?parentId=${client._context.instanceGuid}`
+        }).then((a,b,c,d) => {
+            var editIssueClient = client.instance(client._context['instances.create'][0].instanceGuid);
+            editIssueClient.trigger('got-issue-info', issue);
+        });
+    });
+    div.append(editButton);
+
     return div;
 }
 
@@ -412,3 +479,7 @@ glizi.eventHandlers.search = function (searchText, element) {
         });
     }
 }
+
+window.glizi = glizi;
+window.gitlab = gitlab;
+window.textFormatter = textFormatter;

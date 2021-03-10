@@ -45,12 +45,6 @@ gitlab.request.labels = function (callback) {
 
 gitlab.request.milestones = function (callback) {
     gitlab.request('GET', "milestones?state=active&per_page=50000", callback);
-    // callback([
-    //     { "title": "January 2021 Release", "id": 1 },
-    //     { "title": "February 2021 Release", "id": 2 },
-    //     { "title": "March 2021 Release", "id": 3 },
-    //     { "title": "April 2021 Release", "id": 4 },
-    // ]);
 }
 
 gitlab.request.issues = function (ticketId, callback) {
@@ -80,3 +74,5 @@ gitlab.request.issues.edit = function (iid, projectId, changes, callback) {
 gitlab.request.projects = function (callback) {
     gitlab.request('GET', "projects?include_subgroups=true&per_page=50000", callback);
 }
+
+module.exports = gitlab;

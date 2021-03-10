@@ -13,7 +13,7 @@
         <div loading-splash class="splash">Loading...</div>
         <div dynamic-fields></div>
         <div static-field class="comment-get-container hidden">
-            Copy message from: <a href="javascript:void(0)" comment-getter="first">first message</a> or <a comment-getter="last" href="javascript:void(0)">last message</a>
+            Copy text from: <a href="javascript:void(0)" comment-getter="first">first message</a> or <a comment-getter="last" href="javascript:void(0)">last message</a>
         </div>
         <div static-field class="field-value hidden">
             <div class="field">Description</div>
@@ -35,8 +35,7 @@
         <button issue-create-btn class="primary" disabled>Create</button>
     </div>
     <script src="https://static.zdassets.com/zendesk_app_framework_sdk/2.0/zaf_sdk.min.js"></script>
-    <!-- <script src="gitlab.js"></script> -->
-    <script src="glizi.js"></script>
+    <script src="main.js"></script>
     <script>
         var client = ZAFClient.init();
         client.invoke('resize', { width: '600px', height: '700px' });
