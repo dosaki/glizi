@@ -13,12 +13,13 @@ cd $CURRENT_DIR
 rm -rf ./dist
 rm -rf ./build
 mkdir ./build
-cp -r ./zendesk-app/assets ./build
-cp -r ./zendesk-app/translations ./build
-cp -r ./zendesk-app/manifest.json ./build
+
+cp -r ./src/assets ./build
+cp -r ./src/translations ./build
+cp -r ./src/manifest.json ./build
 cp -r ./README.md ./build
 rm -rf ./build/assets/*.js
-./zendesk-app/node_modules/parcel/bin/cli.js build ./zendesk-app/assets/js/glizi.js --out-file main.js --out-dir ./build/assets
+./src/node_modules/parcel/bin/cli.js build ./src/assets/js/glizi.js --out-file main.js --out-dir ./build/assets
 rm -rf ./build/assets/js
 
 cd ./build

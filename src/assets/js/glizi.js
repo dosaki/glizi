@@ -275,8 +275,8 @@ glizi.issueHeader = function (issue, zendeskId) {
         client.invoke('instances.create', {
             location: 'modal',
             url: `assets/issue-details.html?parentId=${client._context.instanceGuid}`
-        }).then((a,b,c,d) => {
-            var editIssueClient = client.instance(client._context['instances.create'][0].instanceGuid);
+        }).then((context) => {
+            var editIssueClient = client.instance(context['instances.create'][0].instanceGuid);
             editIssueClient.trigger('got-issue-info', issue);
         });
     });

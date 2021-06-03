@@ -33,6 +33,7 @@
             var parentClient = client.instance(params.parentId);
             
             client.on('got-issue-info', (issue) => {
+                console.log(issue)
                 container.append(glizi.editableField("Title", issue.title));
                 container.append(glizi.editableDropdownField("Project", glizi.modules));
                 container.append(glizi.editableDropdownField("Type", glizi.issueTypes));
