@@ -22,14 +22,14 @@
         </div>
     </div>
     <script src="https://static.zdassets.com/zendesk_app_framework_sdk/2.0/zaf_sdk.min.js"></script>
-    <script src="main.js"></script>
+    <script src="js/main.js"></script>
 
     <script>
         function fetchIssues(container, ticketId) {
-            gitlab.request.issues(ticketId, (issues) => {
+            gitlab.fetchIssues(ticketId, (issues) => {
                 container.innerHTML = "";
                 if (issues && issues.length > 0) {
-                    for (var i = 0; i < issues.length; i++) {
+                    for (let i = 0; i < issues.length; i++) {
                         if (glizi.isMonitoredProject(issues[i]["project_id"])) {
                             container.append(glizi.issueAsElement(issues[i], ticketId));
                         }
@@ -39,15 +39,15 @@
                 }
             });
         }
-        var createIssueClient = null;
-        var client = ZAFClient.init();
+        const createIssueClient = null;
+        const client = ZAFClient.init();
         client.invoke('resize', { width: '100%', height: '330px' });
 
         client.on('get-comment', (number) => {
             client.get('ticket')
                 .then((result) => {
-                    var comment = number < 0 ? result.ticket.comments[result.ticket.comments.length + number] : result.ticket.comments[number];
-                    var plainTextComment = textFormatter.htmlToMd(comment.value)
+                    const comment = number < 0 ? result.ticket.comments[result.ticket.comments.length + number] : result.ticket.comments[number];
+                    const plainTextComment = textFormatter.htmlToMd(comment.value)
                     createIssueClient.trigger('got-comment', plainTextComment);
                 })
                 .catch((e) => {
@@ -57,12 +57,12 @@
         });
 
         glizi.init(client, (context) => {
-            var container = document.querySelector("[issues]");
+            const container = document.querySelector("[issues]");
             client.get('ticket').then((data) => {
-                var ticketId = data['ticket'].id;
-                var ticketDataParams = glizi.asTicketParams(data['ticket']);
+                const ticketId = data['ticket'].id;
+                const ticketDataParams = glizi.asTicketParams(data['ticket']);
 
-                var createIssueButton = document.querySelector("[create-issue-btn]");
+                const createIssueButton = document.querySelector("[create-issue-btn]");
                 createIssueButton.removeAttribute("disabled");
                 createIssueButton.addEventListener("click", () => {
                     client.invoke('instances.create', {
@@ -73,7 +73,7 @@
                     });
                 });
 
-                var linkIssueButton = document.querySelector("[link-issue-btn]");
+                const linkIssueButton = document.querySelector("[link-issue-btn]");
                 linkIssueButton.removeAttribute("disabled");
                 linkIssueButton.addEventListener("click", () => {
                     client.invoke('instances.create', {

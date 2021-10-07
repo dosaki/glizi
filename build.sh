@@ -14,13 +14,14 @@ rm -rf ./dist
 rm -rf ./build
 mkdir ./build
 
-cp -r ./src/assets ./build
-cp -r ./src/translations ./build
-cp -r ./src/manifest.json ./build
-cp -r ./README.md ./build
-rm -rf ./build/assets/*.js
-./src/node_modules/parcel/bin/cli.js build ./src/assets/js/glizi.js --out-file main.js --out-dir ./build/assets
-rm -rf ./build/assets/js
+cp -r ./static/* ./build/
+cp ./README.md ./build/
+
+if [[ "${IS_DEV_MODE}" == "TRUE" ]]; then
+    ./node_modules/webpack/bin/webpack.js --mode development
+else
+    ./node_modules/webpack/bin/webpack.js
+fi
 
 cd ./build
 zat package

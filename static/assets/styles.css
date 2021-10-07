@@ -74,6 +74,9 @@ button[disabled]:hover {
     padding:10px;
     display: flex;
 }
+.field-value.vertical {
+    flex-direction: column;
+}
 
 .field-value.small {
     padding:2px 0;
@@ -159,10 +162,27 @@ input.result[type="checkbox"] {
 
 .comment-get-container {
     padding-left: 10px;
-    margin-top: 6px;
-    margin-bottom: -6px;
+    margin-top: -6px;
+    margin-bottom: 16px;
 }
 
+.grow-1,
 .flex-spacer {
     flex-grow: 1;
+}
+
+.issue-header-big {
+    display: flex;
+}
+
+.issue-link {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.editable > .value {
+    border: 0;
+    border-bottom: 1px solid black;
+    border-radius: 0;
 }

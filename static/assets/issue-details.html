@@ -18,39 +18,45 @@
         <button issue-save-btn class="primary" disabled>Save</button>
     </div>
     <script src="https://static.zdassets.com/zendesk_app_framework_sdk/2.0/zaf_sdk.min.js"></script>
-    <script src="main.js"></script>
+    <script src="js/main.js"></script>
     <script>
-        var client = ZAFClient.init();
+        const client = ZAFClient.init();
         client.invoke('resize', { width: '600px', height: '700px' });
         client.on('got-comment', (comment) => {
             document.querySelector('[glizi-value="description"]').innerHTML = comment;
         });
         glizi.init(client, () => {
-            var container = document.querySelector("[dynamic-fields]");
-            var splash = document.querySelector("[loading-splash]");
-            var staticFields = document.querySelectorAll("[static-field]");
-            var params = glizi.convertParams();
-            var parentClient = client.instance(params.parentId);
+            const container = document.querySelector("[dynamic-fields]");
+            console.log(container.innerHTML);
+            const splash = document.querySelector("[loading-splash]");
+            const staticFields = document.querySelectorAll("[static-field]");
+            const params = glizi.convertParams();
+            const parentClient = client.instance(params.parentId);
             
-            client.on('got-issue-info', (issue) => {
-                console.log(issue)
-                container.append(glizi.editableField("Title", issue.title));
-                container.append(glizi.editableDropdownField("Project", glizi.modules));
+            const issueDetailsHandler = (issue) => {
+                const header = document.createElement('div');
+                header.className = 'issue-header-big';
+                header.append(glizi.link(glizi.issueCode(issue), issue["web_url"]));
+                header.append(glizi.editableField("Title", issue.title, ['grow-1']));
+                container.append(header);
+                container.append(glizi.editableDropdownField("Project", glizi.modules, '', issue));
                 container.append(glizi.editableDropdownField("Type", glizi.issueTypes));
                 container.append(glizi.editableDropdownField("Priority", glizi.issuePriorities));
                 container.append(glizi.editableDropdownField("Sprint", glizi.sprints));
-                for (var i = 0; i < staticFields.length; i++) {
+                for (const i = 0; i < staticFields.length; i++) {
                     staticFields[i].classList = [...staticFields[i].classList].filter((i) => i !== "hidden");
                 }
-                splash.className = `${splash.className} hidden`
-            });
+                splash.className = `${splash.className} hidden`;
+                client.off('got-issue-info', issueDetailsHandler);
+            }
+            client.on('got-issue-info', issueDetailsHandler);
 
-            var cancelBtn = document.querySelector("[cancel-btn]");
+            const cancelBtn = document.querySelector("[cancel-btn]");
             cancelBtn.addEventListener("click", () => {
                 client.invoke('destroy');
             });
 
-            var saveBtn = document.querySelector("[issue-save-btn]");
+            const saveBtn = document.querySelector("[issue-save-btn]");
             saveBtn.removeAttribute("disabled");
             saveBtn.addEventListener("click", () => {
                 // glizi.newIssue(glizi.prepareForSending(params), () => {
@@ -58,6 +64,8 @@
                     client.invoke('destroy');
                 // });
             });
+
+            parentClient.trigger('child-initialized', client._instanceGuid);
         });
     </script>
 </body>
