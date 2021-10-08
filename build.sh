@@ -8,9 +8,13 @@ while [[ -h "${SOURCE}" ]]; do # resolve ${SOURCE} until the file is no longer a
 done
 CURRENT_DIR="$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
 
+ARG="$1"
+if [[ "${ARG}" == "--dev" ]];then
+  IS_DEV_MODE="TRUE"
+fi
+
 cd $CURRENT_DIR
 
-rm -rf ./dist
 rm -rf ./build
 mkdir ./build
 
@@ -20,12 +24,13 @@ cp ./README.md ./build/
 if [[ "${IS_DEV_MODE}" == "TRUE" ]]; then
     ./node_modules/webpack/bin/webpack.js --mode development
 else
+    rm -rf ./dist
     ./node_modules/webpack/bin/webpack.js
+    cd ./build
+    zat package
+    mv tmp ../dist
 fi
 
-cd ./build
-zat package
-mv tmp ../dist
 
 cd $CURRENT_DIR
-rm -rf ./build
+# rm -rf ./build

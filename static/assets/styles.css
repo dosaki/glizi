@@ -17,14 +17,26 @@ button {
     border-radius: 4px;
 }
 
+button.icon {
+    align-self: center;
+}
+
 button.primary {
     color: darkorange;
-    border-color:darkorange;
+    fill: darkorange;
+    stroke: darkorange;
+    border-color: darkorange;
+    outline: none;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    text-align: center;
 }
 
 button.primary:hover {
     background: darkorange;
     color: white;
+    fill: white;
     border-color:darkorange;
 }
 
@@ -133,10 +145,21 @@ input.result[type="checkbox"] {
 .issue-header {
     display: flex;
     width: 100%;
+    justify-content: space-between;
 }
 
-.issue-header > * {
-    display: inline-block;
+.issue-header-title {
+    font-size: 1.1em;
+    margin-right: 35px;
+}
+
+.issue-header-buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.issue-header-info {
+    text-align: center;
 }
 
 .unlink-link {
@@ -149,8 +172,8 @@ input.result[type="checkbox"] {
 }
 
 .assignee {
-    background: #8d135b;
-    color: #fff;
+    background: #ffffff;
+    color: #8d135b;
     font-weight: bold;
     display: inline-block;
     padding: 2px 6px;
@@ -166,8 +189,7 @@ input.result[type="checkbox"] {
     margin-bottom: 16px;
 }
 
-.grow-1,
-.flex-spacer {
+.grow-1 {
     flex-grow: 1;
 }
 
@@ -185,4 +207,137 @@ input.result[type="checkbox"] {
     border: 0;
     border-bottom: 1px solid black;
     border-radius: 0;
+}
+
+.issue-header-link {
+    font-size: 1.1em;
+}
+
+.issue-header-status,
+.issue-type,
+.issue-priority {
+    color: #fff;
+    font-weight: bold;
+    display: block;
+    padding: 2px 6px;
+    border-radius: 6px;
+    text-decoration: none;
+    margin: 1px;
+    text-align: center;
+}
+
+.issue-header-status.open {
+    background: #3c5aaf;
+    border: 1px solid #3c5aaf;
+}
+
+.issue-header-status.failed {
+    background: #af3c3c;
+    border: 1px solid #af3c3c;
+}
+
+.issue-header-status.waiting {
+    background: #8e3caf;
+    border: 1px solid #8e3caf;
+}
+
+.issue-header-status.rejected {
+    background: #535353;
+    border: 1px solid #535353;
+}
+
+.issue-header-status.automated {
+    background: #0e8618;
+    border: 1px solid #0e8618;
+}
+
+.issue-header-status.in-testing {
+    background: #52860e;
+    border: 1px solid #52860e;
+}
+
+.issue-header-status.in-progress {
+    background: #d49c00;
+    border: 1px solid #d49c00;
+}
+
+.issue-header-status.ready-to-test {
+    background: #b4b100;
+    border: 1px solid #b4b100;
+}
+
+.issue-header-status.pending-automation {
+    background: #00860d;
+    border: 1px solid #00860d;
+}
+
+.issue-header-status.unknown {
+    background: #000000;
+    border: 1px solid #000000;
+}
+
+.issue-header-type-priority {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+
+.issue-type.bug {
+    background: #af3c3c;
+    border: 1px solid #af3c3c;
+}
+
+.issue-type.improvement {
+    background: #00860d;
+    border: 1px solid #00860d;
+}
+
+.issue-type.vulnerability {
+    background: #d49c00;
+    border: 1px solid #d49c00;
+}
+
+.issue-type.task {
+    background: #3c5aaf;
+    border: 1px solid #3c5aaf;
+}
+
+.issue-type.task {
+    background: #8e3caf;
+    border: 1px solid #8e3caf;
+}
+
+.issue-type.not-set {
+    background: #000000;
+    border: 1px solid #000000;
+}
+
+.issue-priority.low {
+    background: #646464;
+    border: 1px solid #646464;
+}
+
+.issue-priority.normal {
+    background: #3c5aaf;
+    border: 1px solid #3c5aaf;
+}
+
+.issue-priority.high {
+    background: #d49c00;
+    border: 1px solid #d49c00;
+}
+
+.issue-priority.highest {
+    background: #af3c3c;
+    border: 1px solid #af3c3c;
+}
+
+.issue-priority.not-set {
+    background: #000000;
+    border: 1px solid #000000;
+}
+
+.issue-small > * {
+    display: inline-block;
 }

@@ -1,5 +1,6 @@
 const gitlab = require('./gitlab');
-const textFormatter = require('./text-formatter');
+const elementUtils = require('./utils/element-utils');
+// const textFormatter = require('./text-formatter');
 
 class Glizi {
     constructor() {
@@ -198,8 +199,8 @@ class Glizi {
             div.setAttribute("collapsed", "true");
         }
 
+        const fieldElem = document.createElement('span');
         if (showField) {
-            const fieldElem = document.createElement('span');
             fieldElem.className = "field";
             fieldElem.innerHTML = `${field}:`;
         }
@@ -242,16 +243,24 @@ class Glizi {
         return link;
     }
 
+    issueInfo(issue) {
+        const issueProperties = this.labelsAsProperties(issue["labels"], issue.state);
+        const issueTypeContainer = elementUtils.newDiv(`issue-header-type-priority`);
+        issueTypeContainer.append(elementUtils.newDiv(`issue-header-status ${elementUtils.classifyText(issueProperties["Status"])}`, issueProperties["Status"]));
+        issueTypeContainer.append(elementUtils.newDiv(`issue-type ${elementUtils.classifyText(issueProperties["Type"])}`, issueProperties["Type"]));
+        issueTypeContainer.append(elementUtils.newDiv(`issue-priority ${elementUtils.classifyText(issueProperties["Priority"])}`, issueProperties["Priority"]));
+        return issueTypeContainer;
+    }
+
     issueHeader(issue, zendeskId) {
-        const div = document.createElement('div');
-        div.className = "issue-header";
-        div.append(this.link(this.issueCode(issue), issue["web_url"], 'issue-header-link'));
+        const div = elementUtils.newDiv("issue-header");
 
+        div.append(this.link(issue.title, issue["web_url"], 'issue-header-title'));
 
-        const spacer = document.createElement("div");
-        spacer.className = "flex-spacer";
-        div.append(spacer);
+        const headerInfo = elementUtils.newDiv("issue-header-info");
+        headerInfo.append(this.link(this.issueCode(issue), issue["web_url"], 'issue-header-link'));
 
+        const buttons = elementUtils.newDiv("issue-header-buttons");
         if (zendeskId) {
             const unlinkButton = this.newButton(`<svg xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="20" height="20" viewBox="0 0 20 20">
             <g>
@@ -263,24 +272,33 @@ class Glizi {
             <path d="m 8,15 v 5"/>
             <path d="M 5,12 H 0"/>
             </g>
-        </svg>`, "primary", () => {
+        </svg>`, "primary icon", () => {
                 this.unlinkIssues(zendeskId, this.issueCode(issue));
             });
-            div.append(unlinkButton);
+            buttons.append(unlinkButton);
         }
 
-        const editButton = this.newButton("&#9998;", "primary", () => {
-            client.invoke('instances.create', {
-                location: 'modal',
-                url: `assets/issue-details.html?parentId=${client._context.instanceGuid}`
-            }).then(() => {
-                client.on('child-initialized', (childClientGuid) => {
-                    const childClient = client.instance(childClientGuid);
-                    childClient.trigger('got-issue-info', issue);
-                });
-            });
-        });
-        div.append(editButton);
+        // Disabled for now...
+        // const editButton = this.newButton(`<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 50 50">
+        //     <path d="M 0,50 4,32 30,7 43,20 17,45 Z M 8,34 5,45 16,42 38,20 30,12 Z" />
+        //     <path d="M 14,44 C 13,40 10,37 6,36 l 1,-3 c 6,1 10,6 11,11 z" />
+        //     <path d="m 34,13 2,2 -23,23 -2,-2 z" />
+        //     <path d="M 3,47 8,46 C 7,44 6,43 4,42 Z"/>
+        //     <path d="M 44,19 31,6 37,1 37,1 C 44,2 48,7 49,13 l 0,1 z M 36,6 44,14 46,12 C 45,8 42,5 38,4 Z"/>
+        // </svg>`, "primary icon", () => {
+        //     client.invoke('instances.create', {
+        //         location: 'modal',
+        //         url: `assets/issue-details.html?parentId=${client._context.instanceGuid}`
+        //     }).then(() => {
+        //         client.on('child-initialized', (childClientGuid) => {
+        //             const childClient = client.instance(childClientGuid);
+        //             childClient.trigger('got-issue-info', issue);
+        //         });
+        //     });
+        // });
+        // buttons.append(editButton);
+        headerInfo.append(buttons);
+        div.append(headerInfo);
 
         return div;
     }
@@ -289,23 +307,23 @@ class Glizi {
         return `${gitlab.monitoredProjects[String(issue["project_id"])]["_prettyName"]}#${issue.iid}`
     }
 
-    labelsAsProperties(labels) {
+    labelsAsProperties(labels, issueState) {
         const properties = {
-            "Type": "Not set",
+            "Type": "Not Set",
             "Priority": "Not Set",
             "Roadmap Item": false,
             "Status": "Open",
             "Linked": [],
         }
         labels.forEach((label) => {
-            const key = label;
-            const value = true;
+            let key = label;
+            let value = true;
             if (label.includes("::")) {
-                const key = label.split("::")[0];
-                const value = label.split("::")[1];
+                key = label.split("::")[0];
+                value = label.split("::")[1];
             } else if (label.includes(":")) {
-                const key = label.split(":")[0];
-                const value = label.split(":")[1];
+                key = label.split(":")[0];
+                value = label.split(":")[1];
             }
             if (key === "Zendesk") {
                 key = "Linked"
@@ -319,21 +337,30 @@ class Glizi {
                 }
             }
         }, {});
+
+        if (issueState === 'closed' && properties["Status"] === "Open") {
+            properties["Status"] = "Unknown";
+        }
+
+        if (properties["Status"] === "Pending Test Automation") {
+            properties["Status"] = "Pending Automation";
+        }
+
         return properties;
     }
 
     issueAsElement(issue, zendeskId) {
-        const issueProperties = this.labelsAsProperties(issue["labels"]);
+        const issueProperties = this.labelsAsProperties(issue["labels"], issue.state);
         const div = document.createElement('div');
         div.className = "issue";
         div.setAttribute("issue_code", this.issueCode(issue));
         div.append(this.issueHeader(issue, zendeskId));
-        div.append(this.newValueElement("Title", issue.title, ["small", ""], { showField: false }));
-        div.append(this.newValueElement("Assignees", issue.assignees.map(a => `<div class='assignee'>${a.name}</div>`).join(''), ["small"]));
-        div.append(this.newValueElement("Sprint", `${issue.milestone.title} (${issue.milestone.id})`, ["small"]));
-        Object.keys(issueProperties).forEach((prop) => {
+        div.append(this.issueInfo(issue));
+        div.append(this.newValueElement("Assignees", issue.assignees.map(a => `<div class='assignee'>${a.name.split(" ")[0]}</div>`).join(''), ["small"], { showField: true }));
+        div.append(this.newValueElement("Sprint", `${issue.milestone.title} (${issue.milestone.id})`, ["small"], { showField: true }));
+        Object.keys(issueProperties).filter(key => !["Status", "Type", "Priority"].includes(key)).forEach((prop) => {
             const value = Array.isArray(issueProperties[prop]) ? issueProperties[prop].join(" ") : issueProperties[prop];
-            div.append(this.newValueElement(prop, value, ["small"]));
+            div.append(this.newValueElement(prop, value, ["small"], { showField: true }));
         });
         return div;
     }
@@ -414,7 +441,7 @@ class Glizi {
                 };
                 dataToChange.description = issue.description.replace(`\n* ${this.makeZendeskMarkdownLink(zendeskId)}`, "");
                 gitlab.editIssue(issue.iid, issue.project_id, dataToChange, (data) => {
-                    issueSearchCache[issueCode] = data;
+                    this.issueSearchCache[issueCode] = data;
                     document.querySelector(`[issue_code="${issueCode}"]`).remove();
                 });
             } else {

@@ -1,14 +1,14 @@
 class Gitlab {
     constructor() {
-        apiUrl = null;
-        groupId = null;
-        token = null;
-        monitoredProjects = null;
-        typeLabel = null;
-        priorityLabel = null;
-        milestones = null;
-        excludeTypeLabels = [];
-        excludePriorityLabels = [];
+        this.apiUrl = null;
+        this.groupId = null;
+        this.token = null;
+        this.monitoredProjects = null;
+        this.typeLabel = null;
+        this.priorityLabel = null;
+        this.milestones = null;
+        this.excludeTypeLabels = [];
+        this.excludePriorityLabels = [];
     }
 
     _request(method, endpoint, callback, body, options) {
