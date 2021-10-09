@@ -39,8 +39,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{PACKAGE_JSON_VERSION}}
-          name: ${{PACKAGE_JSON_VERSION}} (${{ github.sha }})
+          tag_name: v${{ env.PACKAGE_JSON_VERSION }}
+          name: ${{ env.PACKAGE_JSON_VERSION }} (${{ github.sha }})
           body: Release notes needed...
           draft: true # All releases default to being a draft
           prerelease: false
