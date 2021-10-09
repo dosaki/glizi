@@ -13,6 +13,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: dosaki/zat:latest
 
     strategy:
       matrix:
@@ -30,8 +31,6 @@ jobs:
           PACKAGE_JSON_VERSION=$(cat package.json | grep version | tr '"' ' ' | awk '{print $3}')
           echo "${PACKAGE_JSON_VERSION}"
           echo "release_version=${PACKAGE_JSON_VERSION}" >> $GITHUB_ENV
-          gem install rake
-          gem install zendesk_apps_tools
           ./build.sh
       - name: Upload Release Asset
         id: upload-release-asset 

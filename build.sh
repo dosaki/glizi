@@ -25,6 +25,7 @@ if [[ "${IS_DEV_MODE}" == "TRUE" ]]; then
     ./node_modules/webpack/bin/webpack.js --mode development
 else
     rm -rf ./dist
+    npm install
     ./node_modules/webpack/bin/webpack.js
     cd ./build
     zat package
