@@ -29,6 +29,7 @@ else
     cd ./build
     zat package
     mv tmp ../dist
+    mv ../dist/app*.zip ../dist/glizi.zip
 fi
 
 

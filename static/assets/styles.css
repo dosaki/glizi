@@ -338,6 +338,10 @@ input.result[type="checkbox"] {
     border: 1px solid #000000;
 }
 
+.issue-small {
+    border-bottom: 1px solid #f1e7c0;
+}
+
 .issue-small > * {
     display: inline-block;
 }
