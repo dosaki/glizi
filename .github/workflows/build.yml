@@ -30,6 +30,8 @@ jobs:
           PACKAGE_JSON_VERSION=$(cat package.json | grep version | tr '"' ' ' | awk '{print $3}')
           echo "${PACKAGE_JSON_VERSION}"
           echo "release_version=${PACKAGE_JSON_VERSION}" >> $GITHUB_ENV
+          gem install rake
+          gem install zendesk_apps_tools
           ./build.sh
       - name: Upload Release Asset
         id: upload-release-asset 
@@ -37,8 +39,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${PACKAGE_JSON_VERSION}
-          name: ${PACKAGE_JSON_VERSION} (${{ github.sha }})
+          tag_name: v${{PACKAGE_JSON_VERSION}}
+          name: ${{PACKAGE_JSON_VERSION}} (${{ github.sha }})
           body: Release notes needed...
           draft: true # All releases default to being a draft
           prerelease: false
