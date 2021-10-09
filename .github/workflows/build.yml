@@ -29,7 +29,7 @@ jobs:
         run: |
           PACKAGE_JSON_VERSION=$(cat package.json | grep version | tr '"' ' ' | awk '{print $3}')
           echo "${PACKAGE_JSON_VERSION}"
-          echo "::set-env name=release_version::${PACKAGE_JSON_VERSION}"
+          echo "release_version=${PACKAGE_JSON_VERSION}" >> $GITHUB_ENV
         env:
           CI: true
       - name: Archive production artifacts
