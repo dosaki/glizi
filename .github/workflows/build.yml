@@ -24,21 +24,22 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Build & Upload
-        id: build-upload
+      - name: Find Version & Build
+        id: build
         run: |
           PACKAGE_JSON_VERSION=$(cat package.json | grep version | tr '"' ' ' | awk '{print $3}')
           echo "${PACKAGE_JSON_VERSION}"
           echo "release_version=${PACKAGE_JSON_VERSION}" >> $GITHUB_ENV
           ./build.sh
+      - name: Upload Release Asset
+        id: upload-release-asset 
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${PACKAGE_JSON_VERSION}
           name: ${PACKAGE_JSON_VERSION} (${{ github.sha }})
-          body: |
-            Contents to be decided.
+          body: Release notes needed...
           draft: true # All releases default to being a draft
           prerelease: false
           files: dist/glizi.zip
