@@ -7,6 +7,8 @@ Please submit bug reports to [Issues](https://github.com/dosaki/glizi/issues).
 
 [Pull requests are welcome](https://github.com/dosaki/glizi/pulls).
 
+If this is helpful for you, [buy me a beer](https://paypal.me/tdosaki) :)
+
 ## How it Works
 After [configuring Glizi](#configuration), it searches your Gitlab issues via the API for issues with a label that matches `Zendesk:#` where `#` is the number of the issue you're currently viewing.
 
