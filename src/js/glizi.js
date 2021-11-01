@@ -103,9 +103,9 @@ class Glizi {
         });
     }
 
-    convertParams() {
+    _convertParams(search) {
         const paramsObj = {};
-        const params = decodeURIComponent(window.location.search)
+        const params = decodeURIComponent(search)
             .replace('?', '')
             .split('&');
         for (let i = 0; i < params.length; i++) {
@@ -114,6 +114,10 @@ class Glizi {
         }
 
         return paramsObj;
+    }
+
+    convertParams() {
+        return this._convertParams(window.location.search);
     }
 
     jsonToParams(json) {

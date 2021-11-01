@@ -218,12 +218,15 @@ input.result[type="checkbox"] {
 .issue-priority {
     color: #fff;
     font-weight: bold;
-    display: block;
     padding: 2px 6px;
     border-radius: 6px;
     text-decoration: none;
     margin: 1px;
     text-align: center;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .issue-header-status.open {
