@@ -356,12 +356,13 @@ class Glizi {
     issueAsElement(issue, zendeskId) {
         const issueProperties = this.labelsAsProperties(issue["labels"], issue.state);
         const div = document.createElement('div');
+        const milestone = issue.milestone ? `${issue.milestone.title} (${issue.milestone.id})` : 'None'
         div.className = "issue";
         div.setAttribute("issue_code", this.issueCode(issue));
         div.append(this.issueHeader(issue, zendeskId));
         div.append(this.issueInfo(issue));
         div.append(this.newValueElement("Assignees", issue.assignees.map(a => `<div class='assignee'>${a.name.split(" ")[0]}</div>`).join(''), ["small"], { showField: true }));
-        div.append(this.newValueElement("Sprint", `${issue.milestone.title} (${issue.milestone.id})`, ["small"], { showField: true }));
+        div.append(this.newValueElement("Sprint", milestone, ["small"], { showField: true }));
         Object.keys(issueProperties).filter(key => !["Status", "Type", "Priority"].includes(key)).forEach((prop) => {
             const value = Array.isArray(issueProperties[prop]) ? issueProperties[prop].join(" ") : issueProperties[prop];
             div.append(this.newValueElement(prop, value, ["small"], { showField: true }));
@@ -410,6 +411,7 @@ class Glizi {
     }
 
     makeZendeskMarkdownLink(zendeskId) {
+        const originalURL = window.location.ancestorOrigins || this.convertParams()["origin"];
         return `[Zendesk:${zendeskId}](${window.location.ancestorOrigins[0]}/agent/tickets/${zendeskId})`;
     }
 
