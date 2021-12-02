@@ -85,14 +85,17 @@ button[disabled]:hover {
 .field-value {
     padding:10px;
     display: flex;
+    align-items: center;
 }
 .field-value.vertical {
     flex-direction: column;
 }
-
 .field-value.small {
     padding:2px 0;
     display: flex;
+}
+.field-value.radio{
+    justify-content: space-between;
 }
 
 .field {
@@ -117,6 +120,15 @@ button[disabled]:hover {
 .value-sm{
     width: 60px;
 }
+
+.radio .value {
+    display: flex;
+    align-items: center;
+}
+.radio .value>input[type=radio] {
+    margin-right: 4px;
+}
+
 
 .hidden {
     display: none;

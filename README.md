@@ -40,3 +40,15 @@ The only required settings are `Gitlab API URL` and `Gitlab Token`, everything e
 
 ![Settings to configure](./images/settings3.png)
 
+#### Configuring Extra Labels
+
+You can flag additional labels by filling in the `Extra Labels` option, this would make some extra options you can tick that get translated into additional labels on gitlab.
+
+Fill them in with a comma-separated string (e.g. `Label 1, Label 2, Label 3`) or add some auto-ticking logic with the format `Field to use{String to find}:Label 1`
+
+* `Field to use` supports `Title` and `Organisation` (or `Organization`);
+* `String to find` can be prefixed `~` (contains), `!~` (not contains), `=` (equals) and `!=` (not equals). If not prefixed, it defaults to `~`;
+* `Label 1` is the name of the label that will be shown as an option and automatically ticket in case the condition is successful.
+
+For example:
+`Title{~}`

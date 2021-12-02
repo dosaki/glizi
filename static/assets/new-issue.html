@@ -43,45 +43,50 @@
         client.on('got-comment', (comment) => {
             document.querySelector('[glizi-value="description"]').innerHTML = comment;
         });
-        glizi.init(client, () => {
+        glizi.init(client, (context, metadata) => {
             const container = document.querySelector("[dynamic-fields]");
             const splash = document.querySelector("[loading-splash]");
             const staticFields = document.querySelectorAll("[static-field]");
             const params = glizi.convertParams();
             const parentClient = client.instance(params.parentId);
+            
+            parentClient.get('ticket.organization').then((organizationData) => {
+                const organization = organizationData["ticket.organization"];
+                container.append(glizi.editableDropdownField("Project", glizi.modules));
+                container.append(glizi.editableDropdownField("Type", glizi.issueTypes));
+                container.append(glizi.editableDropdownField("Priority", glizi.issuePriorities));
+                container.append(glizi.editableDropdownField("Sprint", glizi.sprints));
+                container.append(glizi.editableField("Title", params.subject));
+                const labels = glizi.raisedByLabels.map(it => it.value);
+                container.append(glizi.editableRadioButtons("raised-by", labels, [], glizi.resolveRaisedChosenValue(params.subject, organization.name)));
+                for (let i = 0; i < staticFields.length; i++) {
+                    staticFields[i].classList = [...staticFields[i].classList].filter((i) => i !== "hidden");
+                }
+                splash.className = `${splash.className} hidden`
 
-            container.append(glizi.editableDropdownField("Project", glizi.modules));
-            container.append(glizi.editableDropdownField("Type", glizi.issueTypes));
-            container.append(glizi.editableDropdownField("Priority", glizi.issuePriorities));
-            container.append(glizi.editableDropdownField("Sprint", glizi.sprints));
-            container.append(glizi.editableField("Title", params.subject));
-            for (let i = 0; i < staticFields.length; i++) {
-                staticFields[i].classList = [...staticFields[i].classList].filter((i) => i !== "hidden");
-            }
-            splash.className = `${splash.className} hidden`
-
-            const cancelBtn = document.querySelector("[cancel-btn]");
-            cancelBtn.addEventListener("click", () => {
-                client.invoke('destroy');
-            });
-
-            const createBtn = document.querySelector("[issue-create-btn]");
-            createBtn.removeAttribute("disabled");
-            createBtn.addEventListener("click", () => {
-                glizi.newIssue(glizi.prepareForSending(params), () => {
-                    parentClient.trigger('refetch-links');
+                const cancelBtn = document.querySelector("[cancel-btn]");
+                cancelBtn.addEventListener("click", () => {
                     client.invoke('destroy');
                 });
-            });
 
-            const firstCommentGetter = document.querySelector('[comment-getter="first"]');
-            firstCommentGetter.addEventListener("click", () => {
-                parentClient.trigger('get-comment', -1);
-            });
-            
-            const lastCommentGetter = document.querySelector('[comment-getter="last"]');
-            lastCommentGetter.addEventListener("click", () => {
-                parentClient.trigger('get-comment', 0);
+                const createBtn = document.querySelector("[issue-create-btn]");
+                createBtn.removeAttribute("disabled");
+                createBtn.addEventListener("click", () => {
+                    glizi.newIssue(glizi.prepareForSending(params), () => {
+                        parentClient.trigger('refetch-links');
+                        client.invoke('destroy');
+                    });
+                });
+
+                const firstCommentGetter = document.querySelector('[comment-getter="first"]');
+                firstCommentGetter.addEventListener("click", () => {
+                    parentClient.trigger('get-comment', -1);
+                });
+                
+                const lastCommentGetter = document.querySelector('[comment-getter="last"]');
+                lastCommentGetter.addEventListener("click", () => {
+                    parentClient.trigger('get-comment', 0);
+                });
             });
         });
     </script>

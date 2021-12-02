@@ -75,6 +75,12 @@
       "type": "text",
       "required": false,
       "secure": false
+    },
+    {
+      "name": "gliziRaisedByLabels",
+      "type": "text",
+      "required": false,
+      "secure": false
     }
   ]
 }

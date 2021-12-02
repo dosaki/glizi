@@ -26,8 +26,10 @@ if [[ "${IS_DEV_MODE}" == "TRUE" ]]; then
 else
     rm -rf ./dist
     npm install
-    ./node_modules/webpack/bin/webpack.js
+    echo "Bundling..."
+    ./node_modules/webpack/bin/webpack.js --mode production
     cd ./build
+    echo "Packaging..."
     zat package
     mv tmp ../dist
     mv ../dist/app*.zip ../dist/glizi.zip

@@ -1,5 +1,6 @@
 const gitlab = require('./gitlab');
 const elementUtils = require('./utils/element-utils');
+const optionsParser = require('./utils/options-parser');
 // const textFormatter = require('./text-formatter');
 
 class Glizi {
@@ -11,7 +12,7 @@ class Glizi {
 
         this.eventHandlers = {
             search: (searchText, element) => {
-                element.innerHTML = "Searching..."
+                element.innerHTML = "Searching...";
                 if (this.isSearchingByID(searchText)) {
                     const projectIssuePair = this.splitProjectIssuePair(searchText);
                     gitlab.searchIssueByID(projectIssuePair.projectId, projectIssuePair.id, (issues) => {
@@ -23,7 +24,7 @@ class Glizi {
                     });
                 }
             }
-        }
+        };
         this.issueSearchCache = {};
     }
 
@@ -45,7 +46,6 @@ class Glizi {
             }, {});
     }
 
-
     init(client, callback) {
         this.client = client;
         client.metadata().then((metadata) => {
@@ -59,6 +59,7 @@ class Glizi {
                 gitlab.excludeTypeLabels = metadata.settings.gitlabExcludeTypeLabels ? metadata.settings.gitlabExcludeTypeLabels.split(",") : [];
                 gitlab.excludePriorityLabels = metadata.settings.gitlabExcludePriorityLabels ? metadata.settings.gitlabExcludePriorityLabels.split(",") : [];
                 gitlab.priorityOrder = metadata.settings.gitlabPriorityOrder ? metadata.settings.gitlabPriorityOrder.split(",") : [];
+                this.raisedByLabels = optionsParser.parseOptions(metadata.settings.gliziRaisedByLabels);
                 gitlab.fetchProjects((rawProjects) => {
                     gitlab.monitoredProjects = this.filterProjects(rawProjects, metadata.settings.gitlabIncludeProjects, metadata.settings.gitlabExcludeProjects);
                     this.modules = Object.values(gitlab.monitoredProjects).map(proj => proj._prettyName);
@@ -88,6 +89,7 @@ class Glizi {
                         gitlab.fetchMilestones((data) => {
                             gitlab.milestones = data;
                             this.sprints = ["", ...data.map(milestone => `${milestone.title} (${milestone.id})`)];
+
                             callback(context, metadata);
                         });
                     });
@@ -167,6 +169,36 @@ class Glizi {
         valueElem.value = chosenValue || "";
 
         div.append(valueElem);
+
+        return div;
+    }
+
+    editableRadioButtons(field, values, extraClasses, chosenValue) {
+        const div = document.createElement('div');
+        const additionalClasses = extraClasses || [];
+        div.className = ["field-value", "editable", "radio", ...additionalClasses].join(" ");
+
+        values.forEach(option => {
+            const divContainer = document.createElement('div');
+            divContainer.className = "value";
+            const valueElem = document.createElement('input');
+            valueElem.setAttribute("type", "radio");
+            valueElem.setAttribute("glizi-value", field.toLowerCase());
+            valueElem.setAttribute("name", field.toLowerCase());
+            valueElem.setAttribute("id", option);
+            if(chosenValue === option){
+                valueElem.setAttribute("checked", "");
+            }
+            valueElem.value = option;
+            const labelElem = document.createElement('label');
+            labelElem.setAttribute("for", option);
+            labelElem.innerHTML = option;
+
+            divContainer.append(valueElem);
+            divContainer.append(labelElem);
+            div.append(divContainer)
+        });
+
 
         return div;
     }
@@ -308,7 +340,7 @@ class Glizi {
     }
 
     issueCode(issue) {
-        return `${gitlab.monitoredProjects[String(issue["project_id"])]["_prettyName"]}#${issue.iid}`
+        return `${gitlab.monitoredProjects[String(issue["project_id"])]["_prettyName"]}#${issue.iid}`;
     }
 
     labelsAsProperties(labels, issueState) {
@@ -318,7 +350,7 @@ class Glizi {
             "Roadmap Item": false,
             "Status": "Open",
             "Linked": [],
-        }
+        };
         labels.forEach((label) => {
             let key = label;
             let value = true;
@@ -330,8 +362,8 @@ class Glizi {
                 value = label.split(":")[1];
             }
             if (key === "Zendesk") {
-                key = "Linked"
-                value = `<a class="zendesk-link" target="_blank" href="https://panintelligencesupport.zendesk.com/agent/tickets/${value}">#${value}</a>`
+                key = "Linked";
+                value = `<a class="zendesk-link" target="_blank" href="https://panintelligencesupport.zendesk.com/agent/tickets/${value}">#${value}</a>`;
             }
             if (Object.keys(properties).includes(key)) {
                 if (Array.isArray(properties[key])) {
@@ -356,7 +388,7 @@ class Glizi {
     issueAsElement(issue, zendeskId) {
         const issueProperties = this.labelsAsProperties(issue["labels"], issue.state);
         const div = document.createElement('div');
-        const milestone = issue.milestone ? `${issue.milestone.title} (${issue.milestone.id})` : 'None'
+        const milestone = issue.milestone ? `${issue.milestone.title} (${issue.milestone.id})` : 'None';
         div.className = "issue";
         div.setAttribute("issue_code", this.issueCode(issue));
         div.append(this.issueHeader(issue, zendeskId));
@@ -391,10 +423,16 @@ class Glizi {
     }
 
     gatherIssueData() {
-        return [...document.querySelectorAll('[glizi-value]')].reduce((acc, el) => {
+        const inputs = [...document.querySelectorAll('[glizi-value]')].reduce((acc, el) => {
             acc[el.getAttribute('glizi-value')] = el.value;
             return acc;
         }, {});
+        const radios = [...document.querySelectorAll('[glizi-value][checked]')].reduce((acc, el) => {
+            acc[el.getAttribute('glizi-value')] = el.value;
+            return acc;
+        }, {});
+
+        return {...inputs, ...radios};
     }
 
     prepareForSending(params) {
@@ -451,17 +489,19 @@ class Glizi {
                     document.querySelector(`[issue_code="${issueCode}"]`).remove();
                 });
             } else {
-                console.error(`No issue found in gitlab for ${issueCode}.`)
+                console.error(`No issue found in gitlab for ${issueCode}.`);
             }
         });
     }
 
     newIssue(issueDetails, callback) {
+        const defaultOption = this.raisedByLabels.find(pair => pair.key === "*") || {};
+        let raisedByLabel = issueDetails["raised-by"] && issueDetails["raised-by"] !== defaultOption.value ? `${issueDetails["raised-by"]},` : '';
         gitlab.newIssue(issueDetails.projectId, {
             "title": issueDetails.title,
             "milestone_id": issueDetails.milestoneId || 0,
             "description": issueDetails.description + `\n\n----\n\nLinked Zendesk tickets:\n* ${this.makeZendeskMarkdownLink(issueDetails.zendeskId)}`,
-            "add_labels": `Priority::${issueDetails.priority},Type::${issueDetails.type},Zendesk:${issueDetails.zendeskId}`
+            "add_labels": `${raisedByLabel}Priority::${issueDetails.priority},Type::${issueDetails.type},Zendesk:${issueDetails.zendeskId}`
         }, callback);
     }
 
@@ -494,6 +534,24 @@ class Glizi {
                 element.append(this.issueAsSearchOption(issue));
             }
         });
+    }
+
+    resolveRaisedChosenValue(issueTitle, organizationName) {
+        if (this.raisedByLabels) {
+            for (let i = 0; i < this.raisedByLabels.length; i++) {
+                if(this.raisedByLabels[i].operation){
+                    if (this.raisedByLabels[i].key.toLowerCase() === "title" && this.raisedByLabels[i].operation(issueTitle)) {
+                        return this.raisedByLabels[i].operation(issueTitle);
+                    }
+                    if (["organization", "organisation"].includes(this.raisedByLabels[i].key.toLowerCase()) && this.raisedByLabels[i].operation(organizationName)) {
+                        return this.raisedByLabels[i].operation(organizationName);
+                    }
+                }
+            }
+            const defaultOption = this.raisedByLabels.find(pair => pair.key === "*");
+            return defaultOption ? defaultOption.value : null;
+        }
+        return null;
     }
 }
 

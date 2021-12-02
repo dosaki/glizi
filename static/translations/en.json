@@ -14,7 +14,8 @@
       "gitlabExcludePriorityLabels": { "label": "Excluded Priorities", "helpText": "Priority labels to exclude (ommiting the scope). E.g.: 'Highest,Lowest' rather than 'Priority::Highest,Priority::Lowest'." },
       "gitlabPriorityOrder": { "label": "Priority Options Order", "helpText": "Order of appearance for priority options in dropdowns. E.g.: 'Low,Normal,High'" },
       "gitlabIncludeProjects": { "label": "Included Projects", "helpText": "Comma-separated list of project IDs to include. You can include a pretty name using a colon. E.g.: 19:My Pretty Project,80:Another Project" },
-      "gitlabExcludeProjects": { "label": "Excluded Projects", "helpText": "Comma-separated list of project IDs to exclude." }
+      "gitlabExcludeProjects": { "label": "Excluded Projects", "helpText": "Comma-separated list of project IDs to exclude." },
+      "gliziRaisedByLabels": { "label": "Extra Labels", "helpText": "Comma-separated list of labels (Raised by UAT,Raised by Customer,Roadmap Item) or label matching rules (Title{~UAT}:Raised by UAT,Organisation{!Panintelligence}:Raised by Customer)." }
     }
   }
 }
