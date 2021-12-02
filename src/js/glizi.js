@@ -495,7 +495,7 @@ class Glizi {
     }
 
     newIssue(issueDetails, callback) {
-        const defaultOption = this.raisedByLabels.find(pair => pair.key === "*") || {};
+        const defaultOption = (this.raisedByLabels||[]).find(pair => pair.key === "*") || {};
         let raisedByLabel = issueDetails["raised-by"] && issueDetails["raised-by"] !== defaultOption.value ? `${issueDetails["raised-by"]},` : '';
         gitlab.newIssue(issueDetails.projectId, {
             "title": issueDetails.title,
