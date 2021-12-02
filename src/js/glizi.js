@@ -130,7 +130,7 @@ class Glizi {
         return Object.keys(gitlab.monitoredProjects).includes(String(projectId));
     }
 
-    editableField(field, value, extraClasses) {
+    editableField(field, value, extraClasses, type) {
         const div = document.createElement('div');
         const additionalClasses = extraClasses || [];
         div.className = ["field-value", "editable", ...additionalClasses].join(" ");
@@ -139,6 +139,7 @@ class Glizi {
         valueElem.className = "value";
         valueElem.setAttribute("glizi-value", field.toLowerCase());
         valueElem.setAttribute("placeholder", field);
+        valueElem.setAttribute("type", type || "text");
         valueElem.value = value;
 
         div.append(valueElem);
@@ -501,7 +502,8 @@ class Glizi {
             "title": issueDetails.title,
             "milestone_id": issueDetails.milestoneId || 0,
             "description": issueDetails.description + `\n\n----\n\nLinked Zendesk tickets:\n* ${this.makeZendeskMarkdownLink(issueDetails.zendeskId)}`,
-            "add_labels": `${raisedByLabel}Priority::${issueDetails.priority},Type::${issueDetails.type},Zendesk:${issueDetails.zendeskId}`
+            "add_labels": `${raisedByLabel}Priority::${issueDetails.priority},Type::${issueDetails.type},Zendesk:${issueDetails.zendeskId}`,
+            "weight": issueDetails.weight || null
         }, callback);
     }
 

@@ -57,6 +57,7 @@
                 container.append(glizi.editableDropdownField("Priority", glizi.issuePriorities));
                 container.append(glizi.editableDropdownField("Sprint", glizi.sprints));
                 container.append(glizi.editableField("Title", params.subject));
+                container.append(glizi.editableField("Weight", "", null, "number"));
                 const labels = glizi.raisedByLabels.map(it => it.value);
                 container.append(glizi.editableRadioButtons("raised-by", labels, [], glizi.resolveRaisedChosenValue(params.subject, organization.name)));
                 for (let i = 0; i < staticFields.length; i++) {
