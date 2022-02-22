@@ -32,7 +32,7 @@ class Gitlab {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if (xhr.status >= 200 && xhr.status < 400) {
                     if (callback) {
-                        callback(JSON.parse(xhr.responseText));
+                        callback(JSON.parse(xhr.responseText), xhr);
                     }
                 } else {
                     console.error("Something went wrong.");
@@ -41,28 +41,45 @@ class Gitlab {
         };
     }
 
+    _requestWithPagination(method, endpoint, callback, body, options, previousBody) {
+        const prevBody = previousBody || [];
+        this._request(method, endpoint, (jsonResponse, xhr) => {
+            const newBody = [
+                ...prevBody,
+                ...jsonResponse
+            ];
+            const nextPage = xhr.getResponseHeader("X-Next-Page");
+            if (nextPage) {
+                const _endpoint = endpoint.includes("?") ? `${endpoint}&page=${nextPage}` : `${endpoint}?page=${nextPage}`;
+                this._requestWithPagination(method, _endpoint, callback, body, options, newBody);
+            } else if (callback) {
+                callback(newBody, xhr);
+            }
+        }, body, options);
+    }
+
     fetchLabels(callback) {
-        this._request('GET', "labels?per_page=50000", callback);
+        this._requestWithPagination('GET', "labels?per_page=50000", callback);
     }
 
     fetchMilestones(callback) {
-        this._request('GET', "milestones?state=active&per_page=50000", callback);
+        this._requestWithPagination('GET', "milestones?state=active&per_page=50000", callback);
     }
 
     fetchIssues(ticketId, callback) {
-        this._request('GET', `issues?labels=Zendesk:${ticketId}`, callback);
+        this._requestWithPagination('GET', `issues?labels=Zendesk:${ticketId}`, callback);
     }
 
     searchIssueByID(projectId, ticketId, callback) {
         if (!projectId) {
-            this._request('GET', `issues?iids[]=${ticketId}`, callback);
+            this._requestWithPagination('GET', `issues?iids[]=${ticketId}`, callback);
         } else {
-            this._request('GET', `projects/${projectId}/issues?iids[]=${ticketId}`, callback, null, { groupless: true });
+            this._requestWithPagination('GET', `projects/${projectId}/issues?iids[]=${ticketId}`, callback, null, { groupless: true });
         }
     }
 
     searchIssues(search, callback) {
-        this._request('GET', `issues?per_page=50000&search=${search}`, callback);
+        this._requestWithPagination('GET', `issues?per_page=50000&search=${search}`, callback);
     }
 
     newIssue(projectId, params, callback) {
@@ -74,7 +91,7 @@ class Gitlab {
     }
 
     fetchProjects(callback) {
-        this._request('GET', "projects?include_subgroups=true&per_page=50000", callback);
+        this._requestWithPagination('GET', "projects?include_subgroups=true&per_page=100", callback);
     }
 }
 

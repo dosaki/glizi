@@ -11,8 +11,8 @@
   "devDependencies": {
     "mocha": "^8.3.2",
     "nyc": "^14.1.1",
-    "webpack": "^5.57.1",
-    "webpack-cli": "^4.9.0"
+    "webpack": "^5.69.1",
+    "webpack-cli": "^4.9.2"
   },
   "main": "glizi.js",
   "dependencies": {
